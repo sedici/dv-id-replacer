@@ -19,13 +19,18 @@ if (!$conexion_pgsql) {
     die("Error de conexión a PostgreSQL: " . pg_last_error());
 }
 else{
-	echo "Conexión establecida con la base de datos";
+	echo "Conexión establecida con la base de datos \n";
     $datasetData = getDatasetID($conexion_pgsql,$idViejo);
-    updateDataset($conexion_pgsql, $datasetData['id'], $prefijoNuevo, $sufijoNuevo);
-
+    if(isset($datasetData['id'])){
+        updateDataset($conexion_pgsql, $datasetData['id'], $prefijoNuevo, $sufijoNuevo);
+        refreshSolr($datasetData['id']);
+    }
+    else{
+        echo "No se encontro el registro indicado. \n";
+    }
+   
 }
 
-$solrURL= "http://localhost:8983/solr/";
 
 
 // Cierro la conexión a la base de datos
@@ -39,7 +44,7 @@ function getDatasetID($db_connection, $temp_id){
     $result = pg_query($db_connection,$query);
 
     if  (!$result) {
-        echo "query did not execute";
+        echo "No se pudo ejecutar la consulta de la función 'getDatasetID' \n";
     }
      else{  
         $row = pg_fetch_array($result);
@@ -55,7 +60,7 @@ function listDatasetWithFake($db_connection){
                 WHERE protocol IN ('perma', 'fakedoi')";
     $result = pg_query($db_connection,$query);
     if  (!$result) {
-        echo "query did not execute";
+        echo "No se pudo ejecutar la consulta de la función 'listDatasetWithFake' \n";
     }
      else{  
         while ($row = pg_fetch_array($result)) {
@@ -66,6 +71,7 @@ function listDatasetWithFake($db_connection){
 }
 
 function updateDataset($db_connection, $id, $prefijoNuevo, $sufijoNuevo){
+    var_dump($id);
     $query = "  UPDATE dvobject 
                 SET authority = '" . $prefijoNuevo . "', 
                 identifier = '" . $sufijoNuevo . "', 
@@ -75,11 +81,26 @@ function updateDataset($db_connection, $id, $prefijoNuevo, $sufijoNuevo){
     $result = pg_query($db_connection,$query);
     $state = pg_result_error($result);
     if  ($state) {
-        echo "No se pudo realizar la actualización: " . $state;
+        echo "No se pudo realizar la actualización: " . $state . "\n";
     }
     else{  
-        echo "Se actualizo correctamente el registro con id ". $id;
+        echo "Se actualizo correctamente el registro con id ". $id . "\n";
     }
 }
 
+function refreshSolr($id){
+    $url = "http://localhost:8080/api/admin/index/datasets/" . $id;
+    $curl = curl_init($url);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true); // Devuelve el resultado como string 
+    $result = curl_exec($curl);
+    if (curl_errno($curl)) {
+        echo 'Error en la solicitud cURL para refrescar indice SOLR: ' . curl_error($curl) . "\n";
+    }
+    else{
+        echo "Se refresco con éxito el indice del dataset "  . $id . "\n";
+    }
+    
+    // Cerrar la sesión cURL
+    curl_close($curl);
+}
 ?>
