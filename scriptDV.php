@@ -8,9 +8,32 @@ $base_de_datos = getenv('DB_NAME');
 
 // Parámetros de terminal
 $idViejo = $argv[1];
-$idNuevo = $argv[2];
+$prefijoNuevo = $argv[2];
+$sufijoNuevo = $argv[3];
 
-// Procesos auxiliares
+// Conexión a PostgreSQL
+$conexion_pgsql = pg_connect("host=localhost dbname=dataverse user=dataverse password=secret");
+
+// Verificar la conexión
+if (!$conexion_pgsql) {
+    die("Error de conexión a PostgreSQL: " . pg_last_error());
+}
+else{
+	echo "Conexión establecida con la base de datos";
+    $datasetData = getDatasetID($conexion_pgsql,$idViejo);
+    updateDataset($conexion_pgsql, $datasetData['id'], $prefijoNuevo, $sufijoNuevo);
+
+}
+
+$solrURL= "http://localhost:8983/solr/";
+
+
+// Cierro la conexión a la base de datos
+pg_close($conexion_pgsql);
+
+
+
+// ---------- Procesos auxiliares ---------- \\
 function getDatasetID($db_connection, $temp_id){
     $query =   "SELECT  Id, authority  FROM public.dvobject  WHERE identifier = '" . $temp_id . "'";
     $result = pg_query($db_connection,$query);
@@ -21,10 +44,10 @@ function getDatasetID($db_connection, $temp_id){
      else{  
         $row = pg_fetch_array($result);
           if(!empty($row)){
-            var_dump($row);
+            return $row;
           }
-        }
-
+    }
+    return false;
 }
 function listDatasetWithFake($db_connection){
     $query =   "SELECT  Id,dtype,authority,identifier,protocol,storageidentifier 
@@ -42,23 +65,21 @@ function listDatasetWithFake($db_connection){
     return $result;
 }
 
-// Conexión a PostgreSQL
-$conexion_pgsql = pg_connect("host=localhost dbname=dataverse user=dataverse password=secret");
-
-// Verificar la conexión
-if (!$conexion_pgsql) {
-    die("Error de conexión a PostgreSQL: " . pg_last_error());
+function updateDataset($db_connection, $id, $prefijoNuevo, $sufijoNuevo){
+    $query = "  UPDATE dvobject 
+                SET authority = '" . $prefijoNuevo . "', 
+                identifier = '" . $sufijoNuevo . "', 
+                identifierregistered=true,protocol='doi',
+                storageidentifier='file:// " . $prefijoNuevo . "/" .$sufijoNuevo ."' 
+                WHERE id=" . $id ;
+    $result = pg_query($db_connection,$query);
+    $state = pg_result_error($result);
+    if  ($state) {
+        echo "No se pudo realizar la actualización: " . $state;
+    }
+    else{  
+        echo "Se actualizo correctamente el registro con id ". $id;
+    }
 }
-else{
-	echo "Conexión establecida con la base de datos";
-    //listDatasetWithID($conexion_pgsql);
-    getDatasetID($conexion_pgsql,'10915/157959');
-}
-
-$solrURL= "http://localhost:8983/solr/";
-
-
-// Cierro la conexión a la base de datos
-pg_close($conexion_pgsql);
 
 ?>
