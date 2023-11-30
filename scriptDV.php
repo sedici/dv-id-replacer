@@ -23,7 +23,11 @@ else{
     $datasetData = getDatasetID($conexion_pgsql,$idViejo);
     if(isset($datasetData['id'])){
         updateDataset($conexion_pgsql, $datasetData['id'], $prefijoNuevo, $sufijoNuevo);
+        $prefijoViejo= $datasetData['authority'];
+        $sufijoViejo= $datasetData['identifier'];
         refreshSolr($datasetData['id']);
+        moveFiles($prefijoViejo, $sufijoViejo, $prefijoNuevo, $sufijoNuevo);
+
     }
     else{
         echo "No se encontro el registro indicado. \n";
@@ -40,7 +44,7 @@ pg_close($conexion_pgsql);
 
 // ---------- Procesos auxiliares ---------- \\
 function getDatasetID($db_connection, $temp_id){
-    $query =   "SELECT  Id, authority  FROM public.dvobject  WHERE identifier = '" . $temp_id . "'";
+    $query =   "SELECT  Id, authority, identifier  FROM public.dvobject  WHERE identifier = '" . $temp_id . "'";
     $result = pg_query($db_connection,$query);
 
     if  (!$result) {
@@ -102,5 +106,25 @@ function refreshSolr($id){
     
     // Cerrar la sesión cURL
     curl_close($curl);
+}
+
+function moveFiles($oldPrefix, $oldSufix , $newPrefix, $newSufix){
+    $base_dir = 'files/';
+    $new_base_dir = $base_dir . $newPrefix;
+    // Creo el directorio base ( /files/authority )
+    if (!is_dir($new_base_dir)) {
+        if (mkdir($new_base_dir, 0755, true)) {
+            echo 'La carpeta se ha creado exitosamente.';
+        } else {
+            echo 'Hubo un error al intentar crear la carpeta.';
+        }
+    }
+    $new_full_dir = $new_base_dir . "/" . $newSufix;
+    $old_full_dir = $base_dir . $oldPrefix . "/" . $oldSufix;
+    if (rename($old_full_dir, $new_full_dir)) {
+        echo 'La carpeta se ha movido exitosamente.';
+    } else {
+        echo 'Hubo un error al intentar mover la carpeta.';
+    }
 }
 ?>
