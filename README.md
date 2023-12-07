@@ -3,7 +3,7 @@ Este Script sirve para asignarle un DOI a un Dataset existente
 
 ## Requisitos de instalación
 
-
+### Instalación de librerias
 Instalar la biblioteca psycopg2 para la conexión con PostgreSQL
 ```
 pip install psycopg2-binary
@@ -21,3 +21,11 @@ Instalar la biblioteca python-dotenv para cargar variables de entorno desde un a
 ```
 pip install python-dotenv
 ```
+### Configuración de variables de entorno
+Se debe crear un archivo .env en el directorio y declarar las siguientes variables:
+- DB_HOST (Host de la BD)
+- DB_USER= (Usuario de la BD)
+- DB_PASS= (Constraseña del usuario de la BD)
+- DB_NAME= (Nombre de la BD)
+- FILES_DIR= (Directorio base de almacenamiento de los archivos de Datasets de Dataverse)
+- STORAGE= (Tipo de almacenamiento, el mas común es file:// )
