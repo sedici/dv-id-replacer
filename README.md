@@ -1,6 +1,13 @@
 # Script Dataverse
 Este Script sirve para asignarle un DOI a un Dataset existente
 
+## Modo de uso
+Para ejecutarlo, se debe abrir una terminal en la carpeta del Script y ejecutar el siguiente comando
+```
+python scriptDV.py SufijoIDViejo PrefijoIDNuevo SufijoIDNuevo
+```
+(Considerando al campo Authority/Autoridad como prefijo de los identificadores)
+
 ## Requisitos de instalación
 
 ### Instalación de librerias
