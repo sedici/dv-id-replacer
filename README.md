@@ -1,7 +1,7 @@
-#Script Dataverse
+# Script Dataverse
 Este Script sirve para asignarle un DOI a un Dataset existente
 
-##Requisitos de instalación
+## Requisitos de instalación
 
 
 Instalar la biblioteca psycopg2 para la conexión con PostgreSQL
