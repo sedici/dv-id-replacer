@@ -6,7 +6,16 @@ Para ejecutarlo, se debe abrir una terminal en la carpeta del Script y ejecutar 
 ```
 python scriptDV.py SufijoIDViejo PrefijoIDNuevo SufijoIDNuevo
 ```
-(Considerando al campo Authority/Autoridad como prefijo de los identificadores)
+(Considerando al campo Authority/Autoridad como prefijo de los identificadores) . Por ejemplo, si el dataset a cambiar tiene el siguiente ID en su URL:
+
+```
+persistentId=perma:10915datasetZNQANH
+```
+Si SufijoIDViejo sería datasetAXOZW4. A ese dataset le corresponde el doi doi:10.35537/10915/157959 , con lo cual el comando debería ser:
+
+```
+python3 scriptDV.py datasetZNQANH 10.35537 10915/157959
+```
 
 ## Requisitos de instalación
 
